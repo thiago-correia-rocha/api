@@ -36,10 +36,10 @@ def consulta_genero():
 @app.route('/consulta-censo-municipio-por-alfabetizacao', methods=['GET'])
 def consulta_alfabetizacao():
     param = request.args.get('UF')
-    colunas = ['Cod','Municipio','Sigla','Total_Alfabetizadas','Total_Nao_Alfabetizadas','Total_Alfabetizados_Perct']
+    colunas = ['Cod','Cep','Sigla','Total_Alfabetizadas','Total_Nao_Alfabetizadas','Total_Alfabetizados_Perct']
     if param:
-        resultado = df2[df2['Sigla'] == param][colunas]
-        json_result = json.dumps(resultado.to_dict(orient='records'), ensure_ascii=False)
+        resultado2 = df2[df2['Sigla'] == param][colunas]
+        json_result = json.dumps(resultado2.to_dict(orient='records'), ensure_ascii=False)
         return Response(json_result, content_type='application/json; charset=utf-8')
     else:
         return ("Favor informar a sigla de uma Unidade Federativa. O campo UF obrigatório.")
@@ -49,9 +49,8 @@ def consulta_area():
     param = request.args.get('UF')
     colunas = ['Cod','Cep','UF','Area','Densidade']
     if param:
-        resultado = df3[df3['Sigla'] == param][colunas]
-        json_result = json.dumps(resultado.to_dict(orient='records'), ensure_ascii=False)
+        resultado3 = df3[df3['UF'] == param][colunas]
+        json_result = json.dumps(resultado3.to_dict(orient='records'), ensure_ascii=False)
         return Response(json_result, content_type='application/json; charset=utf-8')
     else:
         return ("Favor informar a sigla de uma Unidade Federativa. O campo UF obrigatório.")
-
