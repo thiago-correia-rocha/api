@@ -44,7 +44,7 @@ def consulta_alfabetizacao():
     else:
         return ("Favor informar a sigla de uma Unidade Federativa. O campo UF obrigatório.")
 
-@app.route('/consulta-censo-municipio-por-alfabetizacao', methods=['GET'])
+@app.route('/consulta-censo-municipio-por-area', methods=['GET'])
 def consulta_area():
     param = request.args.get('UF')
     colunas = ['Cod','Cep','UF','Area','Densidade']
