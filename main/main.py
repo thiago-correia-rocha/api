@@ -9,7 +9,7 @@ df_principal = df_principal[df_principal['Nivel'] == 'MU']
 df_principal = pd.DataFrame(df_principal).sort_values(by=['Cod'],ascending=True)
 
 #####API 2 /consulta-censo-municipio-por-alfabetizacao
-file_path = 'main/sources/Alfabetizacao.csv'
+file_path = 'sources/Alfabetizacao.csv'
 df_alfabetizacao = pd.read_csv(file_path, encoding='utf-8')
 df_alfabetizacao = df_alfabetizacao[df_alfabetizacao['Nivel'] == 'MU']
 df_alfabetizacao = pd.DataFrame(df_alfabetizacao).sort_values(by=['Cod'],ascending=True)
