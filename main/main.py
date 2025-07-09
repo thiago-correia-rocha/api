@@ -1,0 +1,99 @@
+import pandas as pd
+from  flask import Flask, request, Response
+import json
+
+#####API 1 /consulta-censo-municipio-por-genero
+file_path = 'sources/Faixa Etaria por Municipio.csv'
+df_principal = pd.read_csv(file_path, encoding='utf-8')
+df_principal = df_principal[df_principal['Nivel'] == 'MU']
+df_principal = pd.DataFrame(df_principal).sort_values(by=['Cod'],ascending=True)
+
+#####API 2 /consulta-censo-municipio-por-alfabetizacao
+file_path = 'main/sources/Alfabetizacao.csv'
+df_alfabetizacao = pd.read_csv(file_path, encoding='utf-8')
+df_alfabetizacao = df_alfabetizacao[df_alfabetizacao['Nivel'] == 'MU']
+df_alfabetizacao = pd.DataFrame(df_alfabetizacao).sort_values(by=['Cod'],ascending=True)
+
+
+####API 3 /consulta-censo-municipio-por-area
+file_path = 'sources/Densidade.csv'
+df_densidade = pd.read_csv(file_path, encoding='utf-8')
+df_densidade = df_densidade[df_densidade['Nivel'] == 'MU']
+df_densidade = pd.DataFrame(df_densidade).sort_values(by=['Cod'],ascending=True)
+
+
+####API 4 /consulta-censo-estado-por-favelas
+file_path = 'sources/favelas.csv'
+df_favelas = pd.read_csv(file_path, encoding='utf-8')
+df_favelas = df_favelas[df_favelas['nivel'] == 'UF']
+df_favelas = pd.DataFrame(df_favelas).sort_values(by=['sigla'],ascending=True)
+
+
+####API 5 /consulta-censo-municipio-por-quilombola
+file_path = 'sources/Quilombolas.csv'
+df_quilombolas = pd.read_csv(file_path, encoding='utf-8')
+df_quilombolas = df_quilombolas[df_quilombolas['nivel'] == 'MU']
+df_quilombolas = pd.DataFrame(df_quilombolas).sort_values(by=['sigla'],ascending=True)
+
+app = Flask(__name__)
+
+
+#####API 1
+@app.route('/consulta-censo-municipio-por-genero', methods=['GET'])
+def consulta_genero():
+    param = request.args.get('UF')
+    colunas = ['Cod','Municipio','Sigla','Total','TotalHomem','TotalMulher']
+    if param:
+        resultado = df_principal[df_principal['Sigla'] == param][colunas]
+        json_result = json.dumps(resultado.to_dict(orient='records'), ensure_ascii=False)
+        return Response(json_result, content_type='application/json; charset=utf-8')
+    else:
+        return ("Favor informar a sigla de uma Unidade Federativa. O campo UF obrigatório .")
+
+####API 2
+@app.route('/consulta-censo-municipio-por-alfabetizacao', methods=['GET'])
+def consulta_alfabetizacao():
+    param = request.args.get('UF')
+    colunas = ['Cod','Cep','Sigla','Total_Alfabetizadas','Total_Nao_Alfabetizadas','Total_Alfabetizados_Perct']
+    if param:
+        resultado2 = df_alfabetizacao[df_alfabetizacao['Sigla'] == param][colunas]
+        json_result = json.dumps(resultado2.to_dict(orient='records'), ensure_ascii=False)
+        return Response(json_result, content_type='application/json; charset=utf-8')
+    else:
+        return ("Favor informar a sigla de uma Unidade Federativa. O campo UF obrigatório.")
+
+####API 3 /consulta-censo-municipio-por-area
+@app.route('/consulta-censo-municipio-por-area', methods=['GET'])
+def consulta_area():
+    param = request.args.get('UF')
+    colunas = ['Cod','Cep','UF','Area','Densidade']
+    if param:
+        resultado3 = df_densidade[df_densidade['UF'] == param][colunas]
+        json_result = json.dumps(resultado3.to_dict(orient='records'), ensure_ascii=False)
+        return Response(json_result, content_type='application/json; charset=utf-8')
+    else:
+        return ("Favor informar a sigla de uma Unidade Federativa. O campo UF obrigatório.")
+
+####API 4 /consulta-censo-estado-por-favelas
+@app.route('/consulta-censo-estado-por-favelas', methods=['GET'])
+def consulta_favelas():
+    colunas = ['cep','sigla','Total','Branca','Preta','Parda','Indigena','Amarela','Sd']
+
+    resultado4 = df_favelas[colunas]
+    json_result = json.dumps(resultado4.to_dict(orient='records'), ensure_ascii=False)
+    return Response(json_result, content_type='application/json; charset=utf-8')
+
+####API 5 /consulta-censo-municipio-por-quilombola
+@app.route('/consulta-censo-municipio-por-quilombola', methods=['GET'])
+def consulta_quilombola():
+    param = request.args.get('UF')
+    colunas = ['Cod','cep','municipio','nivel','sigla','total','em_territorio_quilombola','fora_territorio_quilombola']
+    if param:
+        resultado5 = df_quilombolas[df_quilombolas['sigla'] == param][colunas]
+        json_result = json.dumps(resultado5.to_dict(orient='records'), ensure_ascii=False)
+        return Response(json_result, content_type='application/json; charset=utf-8')
+    else:
+        return ("Favor informar a sigla de uma Unidade Federativa. O campo UF obrigatório.")
+
+#if __name__ == "__main__":
+#    app.run(debug=True)
