@@ -35,6 +35,13 @@ df_quilombolas = pd.read_csv(file_path, encoding='utf-8')
 df_quilombolas = df_quilombolas[df_quilombolas['nivel'] == 'MU']
 df_quilombolas = pd.DataFrame(df_quilombolas).sort_values(by=['sigla'],ascending=True)
 
+
+####API 6 /consulta-censo-municipio-por-quilombola
+file_path = 'sources/n_favelas_municipios.csv'
+df_favelas_municipio = pd.read_csv(file_path, encoding='utf-8')
+df_favelas_municipio = pd.DataFrame(df_favelas_municipio).sort_values(by=['UF'],ascending=True)
+
+
 app = Flask(__name__)
 
 
@@ -90,6 +97,19 @@ def consulta_quilombola():
     colunas = ['Cod','cep','municipio','nivel','sigla','total','em_territorio_quilombola','fora_territorio_quilombola']
     if param:
         resultado5 = df_quilombolas[df_quilombolas['sigla'] == param][colunas]
+        json_result = json.dumps(resultado5.to_dict(orient='records'), ensure_ascii=False)
+        return Response(json_result, content_type='application/json; charset=utf-8')
+    else:
+        return ("Favor informar a sigla de uma Unidade Federativa. O campo UF obrigatório.")
+
+
+####API 6 /consulta-censo-municipio-por-qtd-favelas
+@app.route('/consulta-censo-municipio-por-qtd-favelas', methods=['GET'])
+def consulta_qtd_favelas():
+    param = request.args.get('UF')
+    colunas = ['UF','Municipio','Qtd_Favelas']
+    if param:
+        resultado5 = df_favelas_municipio[df_favelas_municipio['UF'] == param][colunas]
         json_result = json.dumps(resultado5.to_dict(orient='records'), ensure_ascii=False)
         return Response(json_result, content_type='application/json; charset=utf-8')
     else:
