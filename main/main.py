@@ -147,7 +147,7 @@ df_events = pd.read_csv(file_path, encoding='utf-8')
 df_events['city'] = df_events['city'].str.lower().str.strip()
 
 ####API 8 /anne-frank-locations
-file_path = 'main/sources/anne_frank/locations.csv'
+file_path = 'sources/anne_frank/locations.csv'
 df_locations = pd.read_csv(file_path, encoding='utf-8')
 
 
