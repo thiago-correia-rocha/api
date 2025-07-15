@@ -55,7 +55,6 @@ app = Flask(__name__)
 def consulta_genero():
     param = request.args.get('UF')
     colunas = ['Cod','Municipio','Sigla','Total','TotalHomem','TotalMulher']
-    registrar_acesso("/consulta-censo-municipio-por-genero")
     if param:
         resultado = df_principal[df_principal['Sigla'] == param][colunas]
         json_result = json.dumps(resultado.to_dict(orient='records'), ensure_ascii=False)
