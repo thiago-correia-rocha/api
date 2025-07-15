@@ -1,5 +1,5 @@
 import pandas as pd
-from  flask import Flask, request, Response, send_file
+from  flask import Flask, request, Response
 import json
 from datetime import datetime
 import csv
@@ -8,18 +8,6 @@ import csv
 #############################################################################################################
 #################################  CENSO BRASIL #############################################################
 #############################################################################################################
-######Registro de Acessos
-def registrar_acesso(endpoint):
-    arquivo = "logs/monitor.csv"
-    ip = request.headers.get('X-Forwarded-For', request.remote_addr)
-    horario = datetime.now().replace(microsecond=0)
-    user_agent = request.headers.get('User-Agent', '')
-
-    with open(arquivo, mode="a", newline="", encoding="utf-8") as f:
-        writer = csv.writer(f)
-        writer.writerow([horario, endpoint, ip, user_agent])
-
-
 #####API 1 /consulta-censo-municipio-por-genero
 file_path = 'sources/censo/Faixa Etaria por Municipio.csv'
 df_principal = pd.read_csv(file_path, encoding='utf-8')
@@ -60,11 +48,6 @@ df_favelas_municipio = pd.read_csv(file_path, encoding='utf-8')
 df_favelas_municipio = pd.DataFrame(df_favelas_municipio).sort_values(by=['UF'],ascending=True)
 
 app = Flask(__name__)
-
-###Download do monitor csv
-@app.route('/download-monitor', methods=['GET'])
-def download_monitor():
-    return send_file('logs/monitor.csv', as_attachment=True)
 
 
 #####API 1
