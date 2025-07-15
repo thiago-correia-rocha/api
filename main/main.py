@@ -146,14 +146,10 @@ def events():
     if param:
         resultado7 = df_events[df_events['city'] == param.lower().strip()][colunas]
     else:
-        resultado6 = df_events[colunas]
+        resultado7 = df_events[colunas]
     json_result = json.dumps(resultado7.to_dict(orient='records'), ensure_ascii=False)
     return Response(json_result, content_type='application/json; charset=utf-8')
 
-####API 7 /anne-frank-events
-file_path = 'sources/anne_frank/events.csv'
-df_events = pd.read_csv(file_path, encoding='utf-8')
-df_events['city'] = df_events['city'].str.lower().str.strip()
 
 
 ####API 8 /anne-frank-locations
