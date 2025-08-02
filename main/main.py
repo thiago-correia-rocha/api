@@ -152,7 +152,7 @@ df_locations = pd.read_csv(file_path, encoding='utf-8')
 
 ####API 9 /anne-frank-characters
 file_path = 'sources/anne_frank/persons.csv'
-df_locations = pd.read_csv(file_path, encoding='utf-8')
+df_characters = pd.read_csv(file_path, encoding='utf-8')
 
 ####API 7 /anne-frank-events
 @app.route('/anne-frank-events', methods=['GET'])
@@ -184,12 +184,12 @@ def locations():
 
 ####API 9 /anne-frank-characters
 @app.route('/anne-frank-characters', methods=['GET'])
-def locations():
+def characters():
     colunas = ['image_description','title','first_name','last_name','birth_date','death_date','gender','birth_place','death_place','birth_country','summary','content','death_country']
-    df_locations.loc[df_locations['image_desc'] == 'Unknown Photo', 'image'] = 'Not Available'
+    df_characters.loc[df_characters['image_desc'] == 'Unknown Photo', 'image'] = 'Not Available'
 
-    resultado0 = df_locations[colunas]
-    json_result = json.dumps(resultado0.to_dict(orient='records'), ensure_ascii=False)
+    resultado9 = df_characters[colunas]
+    json_result = json.dumps(resultado9.to_dict(orient='records'), ensure_ascii=False)
     return Response(json_result, content_type='application/json; charset=utf-8')
 
 if __name__ == "__main__":
