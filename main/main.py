@@ -162,7 +162,7 @@ def events():
     if param:
         resultado7 = df_events[df_events['city'] == param.lower().strip()][colunas]
     else:
-        resultado6 = df_events[colunas]
+        resultado7 = df_events[colunas]
     json_result = json.dumps(resultado7.to_dict(orient='records'), ensure_ascii=False)
     return Response(json_result, content_type='application/json; charset=utf-8')
 
@@ -186,7 +186,7 @@ def locations():
 @app.route('/anne-frank-characters', methods=['GET'])
 def characters():
     colunas = ['image_description','title','first_name','last_name','birth_date','death_date','gender','birth_place','death_place','birth_country','summary','content','death_country']
-    df_characters.loc[df_characters['image_desc'] == 'Unknown Photo', 'image'] = 'Not Available'
+    df_characters.loc[df_characters['image_description'] == 'Unknown Photo', 'image'] = 'Not Available'
 
     resultado9 = df_characters[colunas]
     json_result = json.dumps(resultado9.to_dict(orient='records'), ensure_ascii=False)
