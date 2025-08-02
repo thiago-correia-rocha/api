@@ -185,10 +185,13 @@ def locations():
 ####API 9 /anne-frank-characters
 @app.route('/anne-frank-characters', methods=['GET'])
 def characters():
-    colunas = ['image_description','title','first_name','last_name','birth_date','death_date','gender','birth_place','death_place','birth_country','summary','content','death_country']
+    param = request.args.get('name')
+    colunas = ['image_description','image','title','first_name','last_name','birth_date','death_date','gender','birth_place','death_place','birth_country','summary','content','death_country']
     df_characters.loc[df_characters['image_description'] == 'Unknown Photo', 'image'] = 'Not Available'
-
-    resultado9 = df_characters[colunas]
+    if param:
+        resultado9 = df_characters[df_characters['title'].str.lower().str.contains(param.lower().strip(), na=False)][colunas]
+    else:
+        resultado9 = df_events[colunas]
     json_result = json.dumps(resultado9.to_dict(orient='records'), ensure_ascii=False)
     return Response(json_result, content_type='application/json; charset=utf-8')
 
