@@ -8,6 +8,18 @@ import csv
 #############################################################################################################
 #################################  CENSO BRASIL #############################################################
 #############################################################################################################
+######Registro de Acessos
+def registrar_acesso(endpoint):
+    arquivo = "logs/monitor.csv"
+    ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+    horario = datetime.now().replace(microsecond=0)
+    user_agent = request.headers.get('User-Agent', '')
+
+    with open(arquivo, mode="a", newline="", encoding="utf-8") as f:
+        writer = csv.writer(f)
+        writer.writerow([horario, endpoint, ip, user_agent])
+
+
 #####API 1 /consulta-censo-municipio-por-genero
 file_path = 'sources/censo/Faixa Etaria por Municipio.csv'
 df_principal = pd.read_csv(file_path, encoding='utf-8')
@@ -55,6 +67,7 @@ app = Flask(__name__)
 def consulta_genero():
     param = request.args.get('UF')
     colunas = ['Cod','Municipio','Sigla','Total','TotalHomem','TotalMulher']
+    registrar_acesso("/consulta-censo-municipio-por-genero")
     if param:
         resultado = df_principal[df_principal['Sigla'] == param][colunas]
         json_result = json.dumps(resultado.to_dict(orient='records'), ensure_ascii=False)
@@ -134,22 +147,29 @@ df_events = pd.read_csv(file_path, encoding='utf-8')
 df_events['city'] = df_events['city'].str.lower().str.strip()
 
 ####API 8 /anne-frank-locations
-file_path = 'sources/anne_frank/locations.csv'
+file_path = 'main/sources/anne_frank/locations.csv'
 df_locations = pd.read_csv(file_path, encoding='utf-8')
 
+####API 9 /anne-frank-characters
+file_path = 'main/sources/anne_frank/persons.csv'
+df_locations = pd.read_csv(file_path, encoding='utf-8')
 
 ####API 7 /anne-frank-events
 @app.route('/anne-frank-events', methods=['GET'])
 def events():
     param = request.args.get('city')
-    colunas = ['city','latitude','longitude','place','event','summary','date','date_start','date_end','content']
+    colunas = ['image_description','title','first_name','last_name','birth_date','death_date','gender','birth_place','death_place','birth_country','summary','content','death_country']
     if param:
         resultado7 = df_events[df_events['city'] == param.lower().strip()][colunas]
     else:
-        resultado7 = df_events[colunas]
+        resultado6 = df_events[colunas]
     json_result = json.dumps(resultado7.to_dict(orient='records'), ensure_ascii=False)
     return Response(json_result, content_type='application/json; charset=utf-8')
 
+####API 7 /anne-frank-events
+file_path = 'sources/anne_frank/events.csv'
+df_events = pd.read_csv(file_path, encoding='utf-8')
+df_events['city'] = df_events['city'].str.lower().str.strip()
 
 
 ####API 8 /anne-frank-locations
@@ -162,6 +182,15 @@ def locations():
     json_result = json.dumps(resultado8.to_dict(orient='records'), ensure_ascii=False)
     return Response(json_result, content_type='application/json; charset=utf-8')
 
+####API 9 /anne-frank-characters
+@app.route('/anne-frank-characters', methods=['GET'])
+def locations():
+    colunas = ['image_description','title','first_name','last_name','birth_date','death_date','gender','birth_place','death_place','birth_country','summary','content','death_country']
+    df_locations.loc[df_locations['image_desc'] == 'Unknown Photo', 'image'] = 'Not Available'
 
-#if __name__ == "__main__":
-#    app.run(debug=True)
+    resultado0 = df_locations[colunas]
+    json_result = json.dumps(resultado0.to_dict(orient='records'), ensure_ascii=False)
+    return Response(json_result, content_type='application/json; charset=utf-8')
+
+if __name__ == "__main__":
+    app.run(debug=True)
