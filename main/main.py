@@ -191,7 +191,7 @@ def characters():
     if param:
         resultado9 = df_characters[df_characters['title'].str.lower().str.contains(param.lower().strip(), na=False)][colunas]
     else:
-        resultado9 = df_events[colunas]
+        resultado9 = df_characters[colunas]
     json_result = json.dumps(resultado9.to_dict(orient='records'), ensure_ascii=False)
     return Response(json_result, content_type='application/json; charset=utf-8')
 
