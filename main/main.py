@@ -184,8 +184,13 @@ df_characters = pd.read_csv(file_path, encoding='utf-8')
 ####API 7 /anne-frank-events
 @app.route('/anne-frank-events', methods=['GET'])
 def events():
+    file_path = 'sources/anne_frank/events.csv'
+    df_events = pd.read_csv(file_path, encoding='utf-8')
+    df_events['city'] = df_events['city'].str.lower().str.strip()
+    registrar_acesso("/anne-frank-events")
+
     param = request.args.get('city')
-    colunas = ['image_description','title','first_name','last_name','birth_date','death_date','gender','birth_place','death_place','birth_country','summary','content','death_country']
+    colunas = ['city','latitude','longitude','place','event','summary','date','date_start','date_end','content','image']
     if param:
         resultado7 = df_events[df_events['city'] == param.lower().strip()][colunas]
     else:
@@ -194,9 +199,7 @@ def events():
     return Response(json_result, content_type='application/json; charset=utf-8')
 
 ####API 7 /anne-frank-events
-file_path = 'sources/anne_frank/events.csv'
-df_events = pd.read_csv(file_path, encoding='utf-8')
-df_events['city'] = df_events['city'].str.lower().str.strip()
+
 
 
 ####API 8 /anne-frank-locations
@@ -204,6 +207,7 @@ df_events['city'] = df_events['city'].str.lower().str.strip()
 def locations():
     colunas = ['latitude','longitude','title','content','image','image_desc']
     df_locations.loc[df_locations['image_desc'] == 'Unknown Photo', 'image'] = 'Not Available'
+    registrar_acesso("/anne-frank-locations")
 
     resultado8 = df_locations[colunas]
     json_result = json.dumps(resultado8.to_dict(orient='records'), ensure_ascii=False)
@@ -215,6 +219,8 @@ def characters():
     param = request.args.get('name')
     colunas = ['image_description','image','title','first_name','last_name','birth_date','death_date','gender','birth_place','death_place','birth_country','summary','content','death_country']
     df_characters.loc[df_characters['image_description'] == 'Unknown Photo', 'image'] = 'Not Available'
+    registrar_acesso("/anne-frank-characters")
+
     if param:
         resultado9 = df_characters[df_characters['title'].str.lower().str.contains(param.lower().strip(), na=False)][colunas]
     else:
