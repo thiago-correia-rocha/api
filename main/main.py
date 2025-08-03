@@ -1,6 +1,8 @@
 import pandas as pd
 from  flask import Flask, request, Response
 import json
+import os
+import requests
 from datetime import datetime
 import csv
 
@@ -12,12 +14,33 @@ import csv
 def registrar_acesso(endpoint):
     arquivo = "logs/monitor.csv"
     ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+
+    url = f"https://ipapi.co/{ip}/json/"
+    try:
+        resposta = requests.get(url)
+        dados = resposta.json()
+        cidade = dados.get("city"),
+        regiao = dados.get("region"),
+        pais = dados.get("country_name"),
+        lat  = dados.get("latitude"),
+        long = dados.get("longitude")
+
+    except Exception as e:
+        return {"erro": str(e)}
+
     horario = datetime.now().replace(microsecond=0)
     user_agent = request.headers.get('User-Agent', '')
+    campos = ["horario", "endpoint", "ip", "user_agent"]
+
+    ##Verifica se arquivo já existe (se não, adiciona o cabeçalho)
+    escrever_cabecalho = not os.path.exists(arquivo) or os.path.getsize(arquivo) == 0
 
     with open(arquivo, mode="a", newline="", encoding="utf-8") as f:
         writer = csv.writer(f)
-        writer.writerow([horario, endpoint, ip, user_agent])
+        if escrever_cabecalho:
+            writer.writerow(campos)  # escreve os nomes das colunas
+
+        writer.writerow([horario, endpoint, cidade, lat, long, user_agent])
 
 
 #####API 1 /consulta-censo-municipio-por-genero
@@ -82,6 +105,7 @@ def consulta_genero():
 def consulta_alfabetizacao():
     param = request.args.get('UF')
     colunas = ['Cod','Cep','Sigla','Total_Alfabetizadas','Total_Nao_Alfabetizadas','Total_Alfabetizados_Perct']
+    registrar_acesso("/consulta-censo-municipio-por-alfabetizacao")
     if param:
         resultado2 = df_alfabetizacao[df_alfabetizacao['Sigla'] == param][colunas]
         json_result = json.dumps(resultado2.to_dict(orient='records'), ensure_ascii=False)
@@ -94,6 +118,7 @@ def consulta_alfabetizacao():
 def consulta_area():
     param = request.args.get('UF')
     colunas = ['Cod','Cep','UF','Area','Densidade']
+    registrar_acesso("/consulta-censo-municipio-por-area")
     if param:
         resultado3 = df_densidade[df_densidade['UF'] == param][colunas]
         json_result = json.dumps(resultado3.to_dict(orient='records'), ensure_ascii=False)
@@ -105,7 +130,7 @@ def consulta_area():
 @app.route('/consulta-censo-estado-por-favelas', methods=['GET'])
 def consulta_favelas():
     colunas = ['cep','sigla','Total','Branca','Preta','Parda','Indigena','Amarela','Sd']
-
+    registrar_acesso("/consulta-censo-estado-por-favelas")
     resultado4 = df_favelas[colunas]
     json_result = json.dumps(resultado4.to_dict(orient='records'), ensure_ascii=False)
     return Response(json_result, content_type='application/json; charset=utf-8')
@@ -115,6 +140,7 @@ def consulta_favelas():
 def consulta_quilombola():
     param = request.args.get('UF')
     colunas = ['Cod','cep','municipio','nivel','sigla','total','em_territorio_quilombola','fora_territorio_quilombola']
+    registrar_acesso("/consulta-censo-municipio-por-quilombola")
     if param:
         resultado5 = df_quilombolas[df_quilombolas['sigla'] == param][colunas]
         json_result = json.dumps(resultado5.to_dict(orient='records'), ensure_ascii=False)
@@ -128,6 +154,7 @@ def consulta_quilombola():
 def consulta_qtd_favelas():
     param = request.args.get('UF')
     colunas = ['UF','Municipio','Qtd_Favelas']
+    registrar_acesso("/consulta-censo-municipio-por-qtd-favelas")
     if param:
         resultado6 = df_favelas_municipio[df_favelas_municipio['UF'] == param][colunas]
         json_result = json.dumps(resultado6.to_dict(orient='records'), ensure_ascii=False)
