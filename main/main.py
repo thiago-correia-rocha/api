@@ -156,11 +156,11 @@ def consulta_domicilios_favela():
 
 
 #####API 8
-@app.route('/consulta-aldeias_indigenas-por-uf', methods=['GET'])
+@app.route('/consulta-aldeias-indigenas-por-uf', methods=['GET'])
 def consulta_aldeias_indigenas():
     param = request.args.get('UF')
     colunas = ['Cod','Aldeia','Municipio','Latitude','Longitude']
-    #registrar_acesso("/cconsulta-aldeias_indigenas-por-uf")
+    #registrar_acesso("/consulta-aldeias_indigenas-por-uf")
     if param:
         resultado8 = df_aldeias[df_aldeias['sigla'] == param.upper()][colunas]
         json_result = json.dumps(resultado8.to_dict(orient='records'), ensure_ascii=False)
