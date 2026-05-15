@@ -54,6 +54,13 @@ file_path = 'sources/censo/relacao_favelas.csv'
 df_comunidades_municipio = pd.read_csv(file_path, encoding='utf-8')
 df_comunidades_municipio = pd.DataFrame(df_comunidades_municipio).sort_values(by=['Sigla'],ascending=True)
 
+
+####API 8 /consulta-aldeias-indigenas-por-uf
+file_path = 'sources/censo/aldeias_pontos.csv'
+df_aldeias = pd.read_csv(file_path, encoding='utf-8')
+df_aldeias = pd.DataFrame(df_aldeias).sort_values(by=['Cod'],ascending=True)
+
+
 app = Flask(__name__)
 
 
@@ -102,8 +109,8 @@ def consulta_area():
 @app.route('/consulta-censo-estado-por-favelas', methods=['GET'])
 def consulta_favelas():
     colunas = ['cep','sigla','Total','Branca','Preta','Parda','Indigena','Amarela','Sd']
-    registrar_acesso("/consulta-censo-estado-por-favelas")
-    #resultado4 = df_favelas[colunas]
+    #registrar_acesso("/consulta-censo-estado-por-favelas")
+    resultado4 = df_favelas[colunas]
     json_result = json.dumps(resultado4.to_dict(orient='records'), ensure_ascii=False)
     return Response(json_result, content_type='application/json; charset=utf-8')
 
@@ -143,6 +150,20 @@ def consulta_domicilios_favela():
     if param:
         resultado7 = df_comunidades_municipio[df_comunidades_municipio['Sigla'] == param.upper()][colunas]
         json_result = json.dumps(resultado7.to_dict(orient='records'), ensure_ascii=False)
+        return Response(json_result, content_type='application/json; charset=utf-8')
+    else:
+        return ("Favor informar a sigla de uma Unidade Federativa. O campo UF obrigatório .")
+
+
+#####API 8
+@app.route('/consulta-aldeias_indigenas-por-uf', methods=['GET'])
+def consulta_aldeias_indigenas():
+    param = request.args.get('UF')
+    colunas = ['Cod','Aldeia','Municipio','Latitude','Longitude']
+    #registrar_acesso("/cconsulta-aldeias_indigenas-por-uf")
+    if param:
+        resultado8 = df_aldeias[df_aldeias['sigla'] == param.upper()][colunas]
+        json_result = json.dumps(resultado8.to_dict(orient='records'), ensure_ascii=False)
         return Response(json_result, content_type='application/json; charset=utf-8')
     else:
         return ("Favor informar a sigla de uma Unidade Federativa. O campo UF obrigatório .")
