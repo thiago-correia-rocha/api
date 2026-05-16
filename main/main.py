@@ -60,11 +60,11 @@ df_aldeias = pd.read_csv(file_path, encoding='utf-8')
 df_aldeias = pd.DataFrame(df_aldeias).sort_values(by=['Cod'],ascending=True)
 
 
-def registra_log(origin,endpoint,start_time,ip,ip_2,status):
+def registra_log(origin,endpoint,start_time,end_time,ip,navegador,status):
     log_file = 'logs/monitor.csv'
     with open(log_file, mode="a", newline="", encoding="utf-8") as file:
         writer = csv.writer(file)
-        writer.writerow([origin,endpoint,start_time,ip,ip_2,status])
+        writer.writerow([origin,endpoint,start_time,end_time,ip,navegador,status])
 
 
 
@@ -79,19 +79,21 @@ def consulta_genero():
     start_time = datetime.now().isoformat()
     colunas = ['Cod','Municipio','Sigla','Total','TotalHomem','TotalMulher']
 
-    ###ip
-    forwarded_for = request.headers.get("X-Forwarded-For")
-    real_ip = request.headers.get("X-Real-IP")
+    ###dados do usuário requisitante
+    ip = request.headers.get("X-Real-IP")
+    navegador = request.headers.get("User-Agent")
 
 
     if param:
         resultado = df_principal[df_principal['Sigla'] == param.upper()][colunas]
         json_result = json.dumps(resultado.to_dict(orient='records'), ensure_ascii=False)
         response = Response(json_result, content_type='application/json; charset=utf-8')
-        registra_log("censo-wiki", "/consulta-censo-municipio-por-genero/", start_time, real_ip,forwarded_for,response.status_code)
+        end_time = datetime.now().isoformat()
+        registra_log("censo-wiki", "/consulta-censo-municipio-por-genero/", start_time, end_time, ip, navegador,response.status_code)
         return response
     else:
-        registra_log("censo-wiki", "/consulta-censo-municipio-por-genero", start_time, request.remote_addr,"500")
+        end_time = datetime.now().isoformat()
+        registra_log("censo-wiki", "/consulta-censo-municipio-por-genero", start_time, end_time, ip, navegador,"500")
         return ("Favor informar a sigla de uma Unidade Federativa. O campo UF obrigatório .")
 
 
