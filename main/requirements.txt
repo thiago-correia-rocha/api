@@ -3,5 +3,4 @@ pandas
 folium
 plotly
 requests
-json
 datetime
