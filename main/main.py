@@ -566,7 +566,7 @@ def monitor():
         </header>
         <div style="width: 1px; padding-left:2em;"></div>
         <header class="major">
-            <div class="content"  style="width:200px;">
+            <div class="content"  style="width:250px;">
                 <h2 style="font-size: 32px; color:#f56a6a;" align="left">{"{:,}".format(total_anne_frank)}</h2>
                 <p>Anne Frank Wiki <strong>{anne_frank_prct} % </strong> </p>
             </div>
