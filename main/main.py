@@ -8,6 +8,9 @@ from datetime import datetime
 import plotly.graph_objects as go
 import csv
 
+###############################################################################################
+#CRIA APIS DO CENSO-BRASIL-WIKI E DA ANNE-FRANK-WIKI
+#CRIA API DE MONITORAMENTO (/MONITOR) C/ HTML DO LOG GRAVADO NO MONITOR.CSV
 
 #############################################################################################################
 #################################  CENSO BRASIL #############################################################
@@ -64,11 +67,11 @@ df_aldeias = pd.read_csv(file_path, encoding='utf-8')
 df_aldeias = pd.DataFrame(df_aldeias).sort_values(by=['Cod'],ascending=True)
 
 
-def registra_log(origin,endpoint,start_time,end_time,ip,navegador,status):
+def registra_log(origin,endpoint,start_time,end_time,ip,city,country,lat,lon,navegador,status):
     log_file = 'logs/monitor.csv'
     with open(log_file, mode="a", newline="", encoding="utf-8") as file:
         writer = csv.writer(file)
-        writer.writerow([origin,endpoint,start_time,end_time,ip,navegador,status])
+        writer.writerow([origin,endpoint,start_time,end_time,ip,city,country,lat,lon,navegador,status])
 
 
 
@@ -87,17 +90,36 @@ def consulta_genero():
     ip = request.headers.get("X-Real-IP")
     navegador = request.headers.get("User-Agent")
 
-
+    ###coordenadas
+    try:
+        url = f"http://ip-api.com/json/{ip}?fields=status,country,regionName,city,lat,lon,isp"
+        response_coordenada = requests.get(url, timeout=3)
+        data = response_coordenada.json()
+        if data.get("status") == "success":
+            city = data.get("city", "")
+            country = data.get("country", "")
+            lat = data.get("lat", "")
+            lon = data.get("lon", "")
+        else:
+            city = ""
+            country = ""
+            lat = ""
+            lon = ""
+    except Exception as e:
+        city = ""
+        country = ""
+        lat = ""
+        lon = ""
     if param:
         resultado = df_principal[df_principal['Sigla'] == param.upper()][colunas]
         json_result = json.dumps(resultado.to_dict(orient='records'), ensure_ascii=False)
         response = Response(json_result, content_type='application/json; charset=utf-8')
         end_time = datetime.now().isoformat()
-        registra_log("censo-wiki", "1", start_time, end_time, ip, navegador,response.status_code)
+        registra_log("censo-wiki", "1", start_time, end_time, ip,city,country,lat,lon, navegador,response.status_code)
         return response
     else:
         end_time = datetime.now().isoformat()
-        registra_log("censo-wiki", "1", start_time, end_time, ip, navegador,"500")
+        registra_log("censo-wiki", "1", start_time, end_time, ip,city,country,lat,lon, navegador,"500")
         return ("Favor informar a sigla de uma Unidade Federativa. O campo UF é obrigatório .")
 
 
@@ -115,17 +137,39 @@ def consulta_alfabetizacao():
     ip = request.headers.get("X-Real-IP")
     navegador = request.headers.get("User-Agent")
 
+    ###coordenadas
+    try:
+        url = f"http://ip-api.com/json/{ip}?fields=status,country,regionName,city,lat,lon,isp"
+        response_coordenada = requests.get(url, timeout=3)
+        data = response_coordenada.json()
+        if data.get("status") == "success":
+            city = data.get("city", "")
+            country = data.get("country", "")
+            lat = data.get("lat", "")
+            lon = data.get("lon", "")
+        else:
+            city = ""
+            country = ""
+            lat = ""
+            lon = ""
+    except Exception as e:
+        city = ""
+        country = ""
+        lat = ""
+        lon = ""
+
+
     #registrar_acesso("/consulta-censo-municipio-por-alfabetizacao")
     if param:
         resultado2 = df_alfabetizacao[df_alfabetizacao['Sigla'] == param.upper()][colunas]
         json_result = json.dumps(resultado2.to_dict(orient='records'), ensure_ascii=False)
         response = Response(json_result, content_type='application/json; charset=utf-8')
         end_time = datetime.now().isoformat()
-        registra_log("censo-wiki", "2", start_time, end_time, ip, navegador,response.status_code)
+        registra_log("censo-wiki", "2", start_time, end_time, ip,city,country,lat,lon, navegador,response.status_code)
         return Response(json_result, content_type='application/json; charset=utf-8')
     else:
         end_time = datetime.now().isoformat()
-        registra_log("censo-wiki", "2", start_time, end_time, ip, navegador,"500")
+        registra_log("censo-wiki", "2", start_time, end_time, ip,city,country,lat,lon, navegador,"500")
         return ("Favor informar a sigla de uma Unidade Federativa. O campo UF é obrigatório.")
 
 ####API 3 /consulta-censo-municipio-por-area
@@ -137,16 +181,38 @@ def consulta_area():
     ###dados do usuário requisitante
     ip = request.headers.get("X-Real-IP")
     navegador = request.headers.get("User-Agent")
+
+    ###coordenadas
+    try:
+        url = f"http://ip-api.com/json/{ip}?fields=status,country,regionName,city,lat,lon,isp"
+        response_coordenada = requests.get(url, timeout=3)
+        data = response_coordenada.json()
+        if data.get("status") == "success":
+            city = data.get("city", "")
+            country = data.get("country", "")
+            lat = data.get("lat", "")
+            lon = data.get("lon", "")
+        else:
+            city = ""
+            country = ""
+            lat = ""
+            lon = ""
+    except Exception as e:
+        city = ""
+        country = ""
+        lat = ""
+        lon = ""
+
     if param:
         resultado3 = df_densidade[df_densidade['UF'] == param.upper()][colunas]
         json_result = json.dumps(resultado3.to_dict(orient='records'), ensure_ascii=False)
         response = Response(json_result, content_type='application/json; charset=utf-8')
         end_time = datetime.now().isoformat()
-        registra_log("censo-wiki", "3", start_time, end_time, ip, navegador, response.status_code)
+        registra_log("censo-wiki", "3", start_time, end_time, ip,city,country,lat,lon, navegador, response.status_code)
         return response
     else:
         end_time = datetime.now().isoformat()
-        registra_log("censo-wiki", "3", start_time, end_time, ip, navegador,"500")
+        registra_log("censo-wiki", "3", start_time, end_time, ip,city,country,lat,lon, navegador,"500")
         return ("Favor informar a sigla de uma Unidade Federativa. O campo UF é obrigatório.")
 
 ####API 4 /consulta-censo-estado-por-favelas
@@ -159,11 +225,32 @@ def consulta_favelas():
     ip = request.headers.get("X-Real-IP")
     navegador = request.headers.get("User-Agent")
 
+    ###coordenadas
+    try:
+        url = f"http://ip-api.com/json/{ip}?fields=status,country,regionName,city,lat,lon,isp"
+        response_coordenada = requests.get(url, timeout=3)
+        data = response_coordenada.json()
+        if data.get("status") == "success":
+            city = data.get("city", "")
+            country = data.get("country", "")
+            lat = data.get("lat", "")
+            lon = data.get("lon", "")
+        else:
+            city = ""
+            country = ""
+            lat = ""
+            lon = ""
+    except Exception as e:
+        city = ""
+        country = ""
+        lat = ""
+        lon = ""
+
     resultado4 = df_favelas[colunas]
     json_result = json.dumps(resultado4.to_dict(orient='records'), ensure_ascii=False)
     response = Response(json_result, content_type='application/json; charset=utf-8')
     end_time = datetime.now().isoformat()
-    registra_log("censo-wiki", "4", start_time, end_time, ip, navegador, response.status_code)
+    registra_log("censo-wiki", "4", start_time, end_time, ip,city,country,lat,lon, navegador, response.status_code)
     return response
 
 ####API 5 /consulta-censo-municipio-por-quilombola
@@ -178,16 +265,37 @@ def consulta_quilombola():
     ip = request.headers.get("X-Real-IP")
     navegador = request.headers.get("User-Agent")
 
+    ###coordenadas
+    try:
+        url = f"http://ip-api.com/json/{ip}?fields=status,country,regionName,city,lat,lon,isp"
+        response_coordenada = requests.get(url, timeout=3)
+        data = response_coordenada.json()
+        if data.get("status") == "success":
+            city = data.get("city", "")
+            country = data.get("country", "")
+            lat = data.get("lat", "")
+            lon = data.get("lon", "")
+        else:
+            city = ""
+            country = ""
+            lat = ""
+            lon = ""
+    except Exception as e:
+        city = ""
+        country = ""
+        lat = ""
+        lon = ""
+
     if param:
         resultado5 = df_quilombolas[df_quilombolas['sigla'] == param.upper()][colunas]
         json_result = json.dumps(resultado5.to_dict(orient='records'), ensure_ascii=False)
         response = Response(json_result, content_type='application/json; charset=utf-8')
         end_time = datetime.now().isoformat()
-        registra_log("censo-wiki", "5", start_time, end_time, ip, navegador, response.status_code)
+        registra_log("censo-wiki", "5", start_time, end_time, ip,city,country,lat,lon, navegador, response.status_code)
         return response
     else:
         end_time = datetime.now().isoformat()
-        registra_log("censo-wiki", "5", start_time, end_time, ip, navegador,"500")
+        registra_log("censo-wiki", "5", start_time, end_time, ip,city,country,lat,lon, navegador,"500")
         return ("Favor informar a sigla de uma Unidade Federativa. O campo UF é obrigatório.")
 
 
@@ -203,16 +311,37 @@ def consulta_qtd_favelas():
     ip = request.headers.get("X-Real-IP")
     navegador = request.headers.get("User-Agent")
 
+    ###coordenadas
+    try:
+        url = f"http://ip-api.com/json/{ip}?fields=status,country,regionName,city,lat,lon,isp"
+        response_coordenada = requests.get(url, timeout=3)
+        data = response_coordenada.json()
+        if data.get("status") == "success":
+            city = data.get("city", "")
+            country = data.get("country", "")
+            lat = data.get("lat", "")
+            lon = data.get("lon", "")
+        else:
+            city = ""
+            country = ""
+            lat = ""
+            lon = ""
+    except Exception as e:
+        city = ""
+        country = ""
+        lat = ""
+        lon = ""
+
     if param:
         resultado6 = df_favelas_municipio[df_favelas_municipio['UF'] == param.upper()][colunas]
         json_result = json.dumps(resultado6.to_dict(orient='records'), ensure_ascii=False)
         response = Response(json_result, content_type='application/json; charset=utf-8')
         end_time = datetime.now().isoformat()
-        registra_log("censo-wiki", "6", start_time, end_time, ip, navegador, response.status_code)
+        registra_log("censo-wiki", "6", start_time, end_time, ip,city,country,lat,lon, navegador, response.status_code)
         return response
     else:
         end_time = datetime.now().isoformat()
-        registra_log("censo-wiki", "6", start_time, end_time, ip, navegador,"500")
+        registra_log("censo-wiki", "6", start_time, end_time, ip,city,country,lat,lon, navegador,"500")
         return ("Favor informar a sigla de uma Unidade Federativa. O campo UF é obrigatório.")
 
 #####API 7
@@ -227,17 +356,38 @@ def consulta_domicilios_favela():
     ip = request.headers.get("X-Real-IP")
     navegador = request.headers.get("User-Agent")
 
+    ###coordenadas
+    try:
+        url = f"http://ip-api.com/json/{ip}?fields=status,country,regionName,city,lat,lon,isp"
+        response_coordenada = requests.get(url, timeout=3)
+        data = response_coordenada.json()
+        if data.get("status") == "success":
+            city = data.get("city", "")
+            country = data.get("country", "")
+            lat = data.get("lat", "")
+            lon = data.get("lon", "")
+        else:
+            city = ""
+            country = ""
+            lat = ""
+            lon = ""
+    except Exception as e:
+        city = ""
+        country = ""
+        lat = ""
+        lon = ""
+
     if param:
         resultado7 = df_comunidades_municipio[df_comunidades_municipio['Sigla'] == param.upper()][colunas]
         json_result = json.dumps(resultado7.to_dict(orient='records'), ensure_ascii=False)
         response = Response(json_result, content_type='application/json; charset=utf-8')
         end_time = datetime.now().isoformat()
-        registra_log("censo-wiki", "7", start_time, end_time, ip, navegador, response.status_code)
+        registra_log("censo-wiki", "7", start_time, end_time, ip,city,country,lat,lon, navegador, response.status_code)
         return response
 
     else:
         end_time = datetime.now().isoformat()
-        registra_log("censo-wiki", "7", start_time, end_time, ip, navegador,"500")
+        registra_log("censo-wiki", "7", start_time, end_time, ip,city,country,lat,lon, navegador,"500")
         return ("Favor informar a sigla de uma Unidade Federativa. O campo UF é obrigatório.")
 
 
@@ -253,16 +403,37 @@ def consulta_aldeias_indigenas():
     ip = request.headers.get("X-Real-IP")
     navegador = request.headers.get("User-Agent")
 
+    ###coordenadas
+    try:
+        url = f"http://ip-api.com/json/{ip}?fields=status,country,regionName,city,lat,lon,isp"
+        response_coordenada = requests.get(url, timeout=3)
+        data = response_coordenada.json()
+        if data.get("status") == "success":
+            city = data.get("city", "")
+            country = data.get("country", "")
+            lat = data.get("lat", "")
+            lon = data.get("lon", "")
+        else:
+            city = ""
+            country = ""
+            lat = ""
+            lon = ""
+    except Exception as e:
+        city = ""
+        country = ""
+        lat = ""
+        lon = ""
+
     if param:
         resultado8 = df_aldeias[df_aldeias['sigla'] == param.upper()][colunas]
         json_result = json.dumps(resultado8.to_dict(orient='records'), ensure_ascii=False)
         response = Response(json_result, content_type='application/json; charset=utf-8')
         end_time = datetime.now().isoformat()
-        registra_log("censo-wiki", "8", start_time, end_time, ip, navegador, response.status_code)
+        registra_log("censo-wiki", "8", start_time, end_time, ip,city,country,lat,lon, navegador, response.status_code)
         return response
     else:
         end_time = datetime.now().isoformat()
-        registra_log("censo-wiki", "8", start_time, end_time, ip, navegador,"500")
+        registra_log("censo-wiki", "8", start_time, end_time, ip,city,country,lat,lon, navegador,"500")
         return ("Favor informar a sigla de uma Unidade Federativa. O campo UF é obrigatório.")
 
 
@@ -295,6 +466,28 @@ def events():
     ip = request.headers.get("X-Real-IP")
     navegador = request.headers.get("User-Agent")
 
+    ###coordenadas
+    try:
+        url = f"http://ip-api.com/json/{ip}?fields=status,country,regionName,city,lat,lon,isp"
+        response_coordenada = requests.get(url, timeout=3)
+        data = response_coordenada.json()
+        if data.get("status") == "success":
+            city = data.get("city", "")
+            country = data.get("country", "")
+            lat = data.get("lat", "")
+            lon = data.get("lon", "")
+        else:
+            city = ""
+            country = ""
+            lat = ""
+            lon = ""
+    except Exception as e:
+        city = ""
+        country = ""
+        lat = ""
+        lon = ""
+
+
     param = request.args.get('city')
     colunas = ['city','latitude','longitude','place','event','summary','date','date_start','date_end','content','image']
     if param:
@@ -304,7 +497,7 @@ def events():
     json_result = json.dumps(resultado9.to_dict(orient='records'), ensure_ascii=False)
     response = Response(json_result, content_type='application/json; charset=utf-8')
     end_time = datetime.now().isoformat()
-    registra_log("anne-frank-wiki", "9", start_time, end_time, ip, navegador, response.status_code)
+    registra_log("anne-frank-wiki", "9", start_time, end_time, ip,city,country,lat,lon, navegador, response.status_code)
     return response
 
 
@@ -319,11 +512,32 @@ def locations():
     ip = request.headers.get("X-Real-IP")
     navegador = request.headers.get("User-Agent")
 
+    ###coordenadas
+    try:
+        url = f"http://ip-api.com/json/{ip}?fields=status,country,regionName,city,lat,lon,isp"
+        response_coordenada = requests.get(url, timeout=3)
+        data = response_coordenada.json()
+        if data.get("status") == "success":
+            city = data.get("city", "")
+            country = data.get("country", "")
+            lat = data.get("lat", "")
+            lon = data.get("lon", "")
+        else:
+            city = ""
+            country = ""
+            lat = ""
+            lon = ""
+    except Exception as e:
+        city = ""
+        country = ""
+        lat = ""
+        lon = ""
+
     resultado10 = df_locations[colunas]
     json_result = json.dumps(resultado10.to_dict(orient='records'), ensure_ascii=False)
     response = Response(json_result, content_type='application/json; charset=utf-8')
     end_time = datetime.now().isoformat()
-    registra_log("anne-frank-wiki", "10", start_time, end_time, ip, navegador, response.status_code)
+    registra_log("anne-frank-wiki", "10", start_time, end_time, ip,city,country,lat,lon, navegador, response.status_code)
     return response
 
 ####API 11 /anne-frank-characters
@@ -338,6 +552,27 @@ def characters():
     ip = request.headers.get("X-Real-IP")
     navegador = request.headers.get("User-Agent")
 
+    ###coordenadas
+    try:
+        url = f"http://ip-api.com/json/{ip}?fields=status,country,regionName,city,lat,lon,isp"
+        response_coordenada = requests.get(url, timeout=3)
+        data = response_coordenada.json()
+        if data.get("status") == "success":
+            city = data.get("city", "")
+            country = data.get("country", "")
+            lat = data.get("lat", "")
+            lon = data.get("lon", "")
+        else:
+            city = ""
+            country = ""
+            lat = ""
+            lon = ""
+    except Exception as e:
+        city = ""
+        country = ""
+        lat = ""
+        lon = ""
+
     if param:
         resultado11 = df_characters[df_characters['title'].str.lower().str.contains(param.lower().strip(), na=False)][colunas]
     else:
@@ -345,7 +580,7 @@ def characters():
     json_result = json.dumps(resultado11.to_dict(orient='records'), ensure_ascii=False)
     response = Response(json_result, content_type='application/json; charset=utf-8')
     end_time = datetime.now().isoformat()
-    registra_log("anne-frank-wiki", "11", start_time, end_time, ip, navegador, response.status_code)
+    registra_log("anne-frank-wiki", "11", start_time, end_time, ip,city,country,lat,lon, navegador, response.status_code)
     return response
 
 
@@ -428,39 +663,19 @@ def monitor():
     coordenadas_iniciais = [20, 0] ##coordenada geral
     mapa = folium.Map(location=coordenadas_iniciais, zoom_start=2)
 
-    while cont < len(df_monitor['start_time']):
-        try:
-            url = f"http://ip-api.com/json/{df_monitor['ip'].iloc[cont]}?fields=status,country,regionName,city,lat,lon,isp"
-            response = requests.get(url, timeout=3)
-            data = response.json()
-            if data.get("status") == "success":
-                city= data.get("city", "")
-                country = data.get("country", "")
-                lat = data.get("lat", "")
-                lon = data.get("lon", "")
-            else:
-                city = ""
-                country = ""
-                lat = ""
-                lon = ""
 
-            acessos_ip = str(len(df_monitor[df_monitor['ip']==df_monitor['ip'].iloc[cont]]))
-
-
-            folium.Marker(
-                location=[lat, lon],
-                tooltip=city + ',' + country + ',' + acessos_ip + ' acesso(s)',
-                icon=folium.Icon(color='lightred')
-            ).add_to(mapa)
-
-            mapa.save('static/mapa.html')
-
-        except Exception:
-            city = ""
-            country = ""
-            lat = ""
-            lon = ""
-            acessos_ip = "0"
+    while cont < len(df_monitor['lat']):
+        lat = df_monitor['lat'].iloc[cont]
+        lon = df_monitor['lon'].iloc[cont]
+        city = df_monitor['city'].iloc[cont]
+        country = df_monitor['country'].iloc[cont]
+        acessos_ip = str(len(df_monitor[df_monitor['ip'] == df_monitor['ip'].iloc[cont]]))
+        folium.Marker(
+            location=[lat, lon],
+            tooltip=city + ',' + country + ',' + acessos_ip + ' acesso(s)',
+            icon=folium.Icon(color='lightred')
+        ).add_to(mapa)
+        mapa.save('static/mapa.html')
 
         cont = cont + 1
 
