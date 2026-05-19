@@ -592,7 +592,7 @@ def monitor():
 
     # cria o dataframe do monitor a ser usado no app para os gráficos
     local_path = 'logs/monitor.csv'
-    colunas = ['origin', 'endpoint', 'start_time', 'end_time', 'ip', 'navegador', 'status']
+    colunas = ['origin', 'endpoint', 'start_time', 'end_time', 'ip','city','country','lat','lon', 'navegador', 'status']
     df_monitor = pd.read_csv(
         local_path,
         names=colunas,
